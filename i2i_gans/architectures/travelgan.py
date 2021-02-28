@@ -99,12 +99,12 @@ def get_travel_loss(siam_real_outputs, siam_fake_outputs, pairs):
 
 
 def get_generator_loss(
-        fake_outputs,
-        siam_real_outputs,
-        siam_fake_outputs,
-        pairs,
-        lambda_gan=LAMBDA_GAN,
-        lambda_travel=LAMBDA_TRAVEL,
+    fake_outputs,
+    siam_real_outputs,
+    siam_fake_outputs,
+    pairs,
+    lambda_gan=LAMBDA_GAN,
+    lambda_travel=LAMBDA_TRAVEL,
 ):
     gan_loss = gan_loss_fn(tf.ones_like(fake_outputs), fake_outputs)
     travel_loss = get_travel_loss(siam_real_outputs, siam_fake_outputs, pairs)
@@ -123,11 +123,11 @@ def get_margin_loss(siam_real_outputs, pairs):
 
 
 def get_siamese_loss(
-        siam_real_outputs,
-        siam_fake_outputs,
-        pairs,
-        lambda_margin=LAMBDA_MARGIN,
-        lambda_travel=LAMBDA_TRAVEL,
+    siam_real_outputs,
+    siam_fake_outputs,
+    pairs,
+    lambda_margin=LAMBDA_MARGIN,
+    lambda_travel=LAMBDA_TRAVEL,
 ):
     margin_loss = get_margin_loss(siam_real_outputs, pairs)
     travel_loss = get_travel_loss(siam_real_outputs, siam_fake_outputs, pairs)
@@ -136,13 +136,13 @@ def get_siamese_loss(
 
 class TraVeLGAN(keras.Model):
     def __init__(
-            self,
-            siamese_dim=SIAMESE_DIM,
-            lambda_travel=LAMBDA_TRAVEL,
-            lambda_margin=LAMBDA_MARGIN,
-            lambda_gan=LAMBDA_GAN,
-            batch_size=BATCH_SIZE,
-            **kwargs,
+        self,
+        siamese_dim=SIAMESE_DIM,
+        lambda_travel=LAMBDA_TRAVEL,
+        lambda_margin=LAMBDA_MARGIN,
+        lambda_gan=LAMBDA_GAN,
+        batch_size=BATCH_SIZE,
+        **kwargs,
     ):
         super().__init__()
 
