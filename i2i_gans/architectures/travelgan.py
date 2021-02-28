@@ -167,9 +167,9 @@ class TraVeLGAN(keras.Model):
     def compile(self, **kwargs):
         super().compile(**kwargs)
 
-        self.gen_opt = optimizers.Adam(learning_rate=2e-4, beta_1=0.5)
-        self.disc_opt = optimizers.Adam(learning_rate=2e-4, beta_1=0.5)
-        self.siam_opt = optimizers.Adam(learning_rate=2e-4, beta_1=0.5)
+        self.gen_opt = optimizers.Adam(learning_rate=2e-4, beta_1=0.5, beta_2=0.9)
+        self.disc_opt = optimizers.Adam(learning_rate=2e-4, beta_1=0.5, beta_2=0.9)
+        self.siam_opt = optimizers.Adam(learning_rate=2e-4, beta_1=0.5, beta_2=0.9)
 
     def train_step(self, batch_data):
         real_A, real_B = batch_data
