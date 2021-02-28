@@ -5,7 +5,7 @@ from contextlib import ExitStack
 
 from tensorflow import keras
 
-from i2i_gans import parsers, datasets, TraVeLGAN
+from i2i_gans import parsers, datasets, callbacks, TraVeLGAN
 
 
 class TraVeLGANParser(parsers.Parser):
@@ -16,6 +16,19 @@ class TraVeLGANParser(parsers.Parser):
         self.train.add_argument("--lambda_travel", type=float, default=10.0)
         self.train.add_argument("--lambda_margin", type=float, default=10.0)
         self.train.add_argument("--lambda_gan", type=float, default=1.0)
+
+
+class TraVeLGANImageSampler(callbacks.ImageSampler):
+    def __init__(self, every_N_epochs, samples_dir, domain_A_dataset, travelgan):
+        super().__init__(every_N_epochs, samples_dir)
+
+        self.real_A = domain_A_dataset.unbatch().take(self.NUMBER_OF_SAMPLES).batch(1)
+        self.travelgan = travelgan
+
+    def images_generator(self):
+        for inputs in self.real_A:
+            outputs = self.travelgan.generator(inputs)
+            yield inputs[0], outputs[0]
 
 
 parser = TraVeLGANParser()
@@ -44,6 +57,11 @@ with ExitStack() as stack:
     travelgan = TraVeLGAN(**vars(args))
     travelgan.compile()
 
+travelgan_sampler = TraVeLGANImageSampler(args.samples_freq, args.samples_dir, train_A, travelgan)
+
 travelgan.fit(
-    dataset, epochs=args.epochs, batch_size=args.batch_size, callbacks=[model_checkpoint_callback]
+    dataset,
+    epochs=args.epochs,
+    batch_size=args.batch_size,
+    callbacks=[model_checkpoint_callback, travelgan_sampler],
 )
