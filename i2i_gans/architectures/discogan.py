@@ -108,8 +108,8 @@ class DiscoGAN(keras.Model):
             lambda_fml=lambda_fml
         )
 
-    def compile(self):
-        super().compile()
+    def compile(self, **kwargs):
+        super().compile(**kwargs)
 
         self.gen_A_optimizer = tfa.optimizers.AdamW(
             learning_rate=2e-4, beta_1=0.5, weight_decay=1e-5
