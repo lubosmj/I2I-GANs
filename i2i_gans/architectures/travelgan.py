@@ -8,6 +8,7 @@ from tensorflow.experimental import numpy as tnp
 from tensorflow.keras import layers, losses, optimizers
 
 from i2i_gans.common.layers import conv2D, deconv2D
+from i2i_gans.common.losses import gan_loss_fn, get_discriminator_loss
 
 IMAGE_SHAPE = (128, 128, 3)
 
@@ -16,8 +17,6 @@ LAMBDA_TRAVEL = 10.0
 LAMBDA_MARGIN = 10.0
 LAMBDA_GAN = 1.0
 BATCH_SIZE = 16
-
-gan_loss_fn = losses.BinaryCrossentropy(reduction=losses.Reduction.NONE, from_logits=True)
 
 
 def build_generator(image_shape):
@@ -74,12 +73,6 @@ def build_siamese(image_shape, latent_dim):
     outputs = layers.Dense(latent_dim)(x)
 
     return keras.Model(inputs=inputs, outputs=outputs, name="travelgan_siamese")
-
-
-def get_discriminator_loss(real_outputs, fake_outputs):
-    real_loss = gan_loss_fn(tf.ones_like(real_outputs), real_outputs)
-    fake_loss = gan_loss_fn(tf.zeros_like(fake_outputs), fake_outputs)
-    return real_loss + fake_loss
 
 
 def get_travel_loss(siam_real_outputs, siam_fake_outputs, pairs):

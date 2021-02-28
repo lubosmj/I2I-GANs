@@ -5,23 +5,22 @@ from contextlib import ExitStack
 
 from tensorflow import keras
 
-from i2i_gans import parsers, datasets, TraVeLGAN
+from i2i_gans import parsers, datasets, DiscoGAN
 
 
-class TraVeLGANParser(parsers.Parser):
+class DiscoGANParser(parsers.Parser):
     def init_train_subparser(self):
         super().init_train_subparser()
 
-        self.train.add_argument("--siamese_dim", type=int, default=1000)
-        self.train.add_argument("--lambda_travel", type=float, default=10.0)
-        self.train.add_argument("--lambda_margin", type=float, default=10.0)
-        self.train.add_argument("--lambda_gan", type=float, default=1.0)
+        self.train.add_argument("--lambda_reconstr", type=float, default=1.0)
+        self.train.add_argument("--lambda_fml", type=float, default=0.9)
+        self.train.add_argument("--lambda_gan", type=float, default=0.1)
 
 
-parser = TraVeLGANParser()
+parser = DiscoGANParser()
 args = parser.parse_args()
 
-checkpoint_filepath = os.path.join(args.checkpoints_dir, "travelgan_checkpoints.{epoch:03d}")
+checkpoint_filepath = os.path.join(args.checkpoints_dir, "discogan_checkpoints.{epoch:03d}")
 every_N_epochs = (args.dataset_size // args.batch_size) * args.checkpoints_freq
 model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath, save_freq=every_N_epochs
@@ -41,9 +40,9 @@ with ExitStack() as stack:
     if args.parallel:
         stack.enter_context(strategy.scope())
 
-    travelgan = TraVeLGAN(**vars(args))
-    travelgan.compile()
+    discogan = DiscoGAN(**vars(args))
+    discogan.compile()
 
-travelgan.fit(
+discogan.fit(
     dataset, epochs=args.epochs, batch_size=args.batch_size, callbacks=[model_checkpoint_callback]
 )

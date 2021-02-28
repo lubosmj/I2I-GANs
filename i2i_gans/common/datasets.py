@@ -20,3 +20,18 @@ def random_flip_left_right(func):
         images = tf.image.random_flip_left_right(images)
         return images
     return wrapper
+
+
+def build_input_pipeline(domain_files, dataset_size, batch_size, augment):
+    d = tf.data.Dataset.list_files(domain_files).take(dataset_size)
+    d = d.interleave(read_image, num_parallel_calls=tf.data.AUTOTUNE)
+    d = d.batch(batch_size, drop_remainder=True)
+
+    if augment and "random_flip_left_right" in augment:
+        preprocess = random_flip_left_right(preprocess_images)
+    else:
+        preprocess = preprocess_images
+
+    d = d.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE).cache()
+    d = d.prefetch(tf.data.AUTOTUNE)
+    return d
