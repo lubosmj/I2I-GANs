@@ -5,7 +5,7 @@ from contextlib import ExitStack
 
 from tensorflow import keras
 
-from i2i_gans import parsers, datasets, DiscoGAN
+from i2i_gans import parsers, datasets, callbacks, DiscoGAN
 
 
 class DiscoGANParser(parsers.Parser):
@@ -15,6 +15,19 @@ class DiscoGANParser(parsers.Parser):
         self.train.add_argument("--lambda_reconstr", type=float, default=1.0)
         self.train.add_argument("--lambda_fml", type=float, default=0.9)
         self.train.add_argument("--lambda_gan", type=float, default=0.1)
+
+
+class DiscoGANImageSampler(callbacks.ImageSampler):
+    def __init__(self, every_N_epochs, samples_dir, domain_A_dataset, discogan):
+        super().__init__(every_N_epochs, samples_dir)
+
+        self.real_A = domain_A_dataset.unbatch().take(self.NUMBER_OF_SAMPLES).batch(1)
+        self.discogan = discogan
+
+    def images_generator(self):
+        for inputs in self.real_A:
+            outputs = self.discogan.gen_B(inputs)
+            yield inputs[0], outputs[0]
 
 
 parser = DiscoGANParser()
@@ -43,6 +56,11 @@ with ExitStack() as stack:
     discogan = DiscoGAN(**vars(args))
     discogan.compile()
 
+discogan_sampler = DiscoGANImageSampler(args.samples_freq, args.samples_dir, train_A, discogan)
+
 discogan.fit(
-    dataset, epochs=args.epochs, batch_size=args.batch_size, callbacks=[model_checkpoint_callback]
+    dataset,
+    epochs=args.epochs,
+    batch_size=args.batch_size,
+    callbacks=[model_checkpoint_callback, discogan_sampler],
 )
