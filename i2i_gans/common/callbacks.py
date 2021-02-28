@@ -28,7 +28,7 @@ class ImageSampler(keras.callbacks.Callback):
                 fake_image = keras.preprocessing.image.array_to_img(fake_output)
 
                 real_image_path = os.path.join(self.samples_dir, f"real_input_{epoch}_{i}.png")
-                fake_image_path = os.path.join(self.samples_dir, f"fake_input_{epoch}_{i}.png")
+                fake_image_path = os.path.join(self.samples_dir, f"fake_output_{epoch}_{i}.png")
                 real_image.save(real_image_path)
                 fake_image.save(fake_image_path)
 
