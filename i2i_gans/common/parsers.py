@@ -25,12 +25,12 @@ class Parser:
             help="Create a checkpoint after the specified number of epochs"
         )
         self.train.add_argument(
-            "--domain_A", required=True,
-            help="A directory containing images in the JPG or PNG format"
+            "--domain_A_files", required=True,
+            help="A dataset of all files matching one or more glob patterns"
         )
         self.train.add_argument(
-            "--domain_B", required=True,
-            help="A directory containing images in the JPG or PNG format"
+            "--domain_B_files", required=True,
+            help="A dataset of all files matching one or more glob patterns"
         )
         self.train.add_argument(
             "--samples_dir", default="samples",
@@ -48,7 +48,7 @@ class Parser:
     def init_test_subparser(self):
         self.test.add_argument("--checkpoints_dir", default="checkpoints")
         self.test.add_argument(
-            "--domain_A", required=True,
+            "--domain_A_files", required=True,
             help="A directory containing images in the JPG or PNG format"
         )
         self.test.add_argument(

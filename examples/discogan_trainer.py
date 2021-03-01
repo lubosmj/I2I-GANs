@@ -40,10 +40,10 @@ model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
 )
 
 train_A = datasets.build_input_pipeline(
-    os.path.join(args.domain_A, "*.*"), args.dataset_size, args.batch_size, args.augment
+    args.domain_A_files, args.dataset_size, args.batch_size, args.augment
 )
 train_B = datasets.build_input_pipeline(
-    os.path.join(args.domain_B, "*.*"), args.dataset_size, args.batch_size, args.augment
+    args.domain_B_files, args.dataset_size, args.batch_size, args.augment
 )
 dataset = tf.data.Dataset.zip((train_A, train_B))
 
