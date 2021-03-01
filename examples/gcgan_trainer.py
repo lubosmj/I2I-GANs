@@ -15,7 +15,7 @@ class GcGANParser(parsers.Parser):
         self.train.add_argument("--lambda_a2b", type=float, default=10.0)
         self.train.add_argument("--lambda_gc", type=float, default=2.0)
         self.train.add_argument("--lambda_ident", type=float, default=0.3)
-        self.train.add_argument("--lambda_gan", type=float, default=0.1)
+        self.train.add_argument("--lambda_gan", type=float, default=1.0)
 
 
 class GcGANImageSampler(callbacks.ImageSampler):
