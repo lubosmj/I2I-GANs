@@ -1,5 +1,3 @@
-import functools
-
 import tensorflow as tf
 
 
@@ -8,30 +6,22 @@ def read_image(image):
     return tf.data.Dataset.from_tensors(image)
 
 
-def preprocess_images(images):
-    images = tf.image.resize(images, [128, 128]) / 127.5 - 1
-    return images
-
-
-def random_flip_left_right(func):
-    @functools.wraps(func)
-    def wrapper(images):
-        images = func(images)
-        images = tf.image.random_flip_left_right(images)
-        return images
-    return wrapper
+def normalize_image(image):
+    image = tf.image.resize(image, [128, 128]) / 127.5 - 1
+    return image
 
 
 def build_input_pipeline(domain_files, dataset_size, batch_size, augment):
     d = tf.data.Dataset.list_files(domain_files).take(dataset_size)
     d = d.interleave(read_image, num_parallel_calls=tf.data.AUTOTUNE)
+    d = d.map(normalize_image, num_parallel_calls=tf.data.AUTOTUNE)
     d = d.batch(batch_size, drop_remainder=True)
 
     if augment and "random_flip_left_right" in augment:
-        preprocess = random_flip_left_right(preprocess_images)
+        augment_images = tf.image.random_flip_left_right
     else:
-        preprocess = preprocess_images
+        augment_images = lambda x: x
 
-    d = d.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE).cache()
+    d = d.map(augment_images, num_parallel_calls=tf.data.AUTOTUNE).cache()
     d = d.prefetch(tf.data.AUTOTUNE)
     return d
