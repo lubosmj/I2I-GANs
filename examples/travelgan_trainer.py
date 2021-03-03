@@ -17,6 +17,8 @@ class TraVeLGANParser(parsers.Parser):
         self.train.add_argument("--lambda_margin", type=float, default=10.0)
         self.train.add_argument("--lambda_gan", type=float, default=1.0)
 
+        self.train.add_argument("--second_domain_B_files")
+
 
 class TraVeLGANImageSampler(callbacks.ImageSampler):
     def __init__(self, every_N_epochs, samples_dir, domain_A_dataset, travelgan):
@@ -43,9 +45,19 @@ model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
 train_A = datasets.build_input_pipeline(
     args.domain_A_files, args.dataset_size, args.batch_size, args.augment
 )
-train_B = datasets.build_input_pipeline(
-    args.domain_B_files, args.dataset_size, args.batch_size, args.augment
-)
+if args.second_domain_B_files:
+    train_B = datasets.build_input_pipeline(
+        args.domain_B_files, args.dataset_size, args.batch_size, args.augment, cache=False
+    )
+    train_B2 = datasets.build_input_pipeline(
+        args.second_domain_B_files, args.dataset_size, args.batch_size, args.augment, cache=False
+    )
+    train_B = tf.data.experimental.sample_from_datasets([train_B, train_B2])
+else:
+    train_B = datasets.build_input_pipeline(
+        args.second_B_files, args.dataset_size, args.batch_size, args.augment
+    )
+
 dataset = tf.data.Dataset.zip((train_A, train_B))
 
 strategy = tf.distribute.MirroredStrategy()

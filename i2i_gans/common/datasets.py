@@ -11,7 +11,7 @@ def normalize_image(image):
     return image
 
 
-def build_input_pipeline(domain_files, dataset_size, batch_size, augment):
+def build_input_pipeline(domain_files, dataset_size, batch_size, augment, cache=True):
     d = tf.data.Dataset.list_files(domain_files).take(dataset_size)
     d = d.interleave(read_image, num_parallel_calls=tf.data.AUTOTUNE)
     d = d.map(normalize_image, num_parallel_calls=tf.data.AUTOTUNE)
@@ -22,6 +22,9 @@ def build_input_pipeline(domain_files, dataset_size, batch_size, augment):
     else:
         augment_images = lambda x: x
 
-    d = d.map(augment_images, num_parallel_calls=tf.data.AUTOTUNE).cache()
+    d = d.map(augment_images, num_parallel_calls=tf.data.AUTOTUNE)
+    if cache:
+        d = d.cache()
+
     d = d.prefetch(tf.data.AUTOTUNE)
     return d
