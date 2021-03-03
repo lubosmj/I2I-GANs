@@ -48,28 +48,33 @@ def build_generator(image_shape):
     return keras.Model(inputs=inputs, outputs=outputs, name="travelgan_unet_generator")
 
 
-def build_encoder(inputs):
-    x = conv2D(inputs, filters=64, use_batch_norm=False)
-    x = conv2D(x, filters=128)
-    x = conv2D(x, filters=256)
-    x = conv2D(x, filters=512)
-    x = conv2D(x, filters=512)
+def build_encoder(inputs, use_spectral_norm=False):
+    if use_spectral_norm:
+        conv2Dp = partial(conv2D, use_spectral_norm=True, use_batch_norm=False)
+    else:
+        conv2Dp = conv2D
+
+    x = conv2Dp(inputs, filters=64, use_batch_norm=False)
+    x = conv2Dp(x, filters=128)
+    x = conv2Dp(x, filters=256)
+    x = conv2Dp(x, filters=512)
+    x = conv2Dp(x, filters=512)
 
     x = layers.Flatten()(x)
     return x
 
 
-def build_discriminator(image_shape):
+def build_discriminator(image_shape, use_spectral_norm=False):
     inputs = layers.Input(shape=image_shape)
-    x = build_encoder(inputs)
+    x = build_encoder(inputs, use_spectral_norm)
     outputs = layers.Dense(1)(x)
 
     return keras.Model(inputs=inputs, outputs=outputs, name="travelgan_discriminator")
 
 
-def build_siamese(image_shape, latent_dim):
+def build_siamese(image_shape, latent_dim, use_spectral_norm=False):
     inputs = layers.Input(shape=image_shape)
-    x = build_encoder(inputs)
+    x = build_encoder(inputs, use_spectral_norm)
     outputs = layers.Dense(latent_dim)(x)
 
     return keras.Model(inputs=inputs, outputs=outputs, name="travelgan_siamese")
@@ -130,6 +135,7 @@ def get_siamese_loss(
 class TraVeLGAN(keras.Model):
     def __init__(
         self,
+        use_spectral_norm=False,
         siamese_dim=SIAMESE_DIM,
         lambda_travel=LAMBDA_TRAVEL,
         lambda_margin=LAMBDA_MARGIN,
@@ -142,10 +148,10 @@ class TraVeLGAN(keras.Model):
         self.generator = build_generator(IMAGE_SHAPE)
         self.generator.summary()
 
-        self.discriminator = build_discriminator(IMAGE_SHAPE)
+        self.discriminator = build_discriminator(IMAGE_SHAPE, use_spectral_norm)
         self.discriminator.summary()
 
-        self.siamese = build_siamese(IMAGE_SHAPE, siamese_dim)
+        self.siamese = build_siamese(IMAGE_SHAPE, siamese_dim, use_spectral_norm)
         self.siamese.summary()
 
         pairs = tnp.asarray(list(combinations(list(range(batch_size)), 2)))

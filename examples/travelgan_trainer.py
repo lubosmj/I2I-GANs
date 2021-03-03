@@ -18,6 +18,7 @@ class TraVeLGANParser(parsers.Parser):
         self.train.add_argument("--lambda_gan", type=float, default=1.0)
 
         self.train.add_argument("--second_domain_B_files")
+        self.train.add_argument("--use_spectral_norm", action="store_true")
 
 
 class TraVeLGANImageSampler(callbacks.ImageSampler):
