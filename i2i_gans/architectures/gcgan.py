@@ -7,6 +7,8 @@ import tensorflow_gan as tfgan
 from tensorflow import keras
 from tensorflow.keras import layers, losses, optimizers
 
+from i2i_gans.common.losses import gan_loss_fn, get_discriminator_loss
+
 IMG_SHAPE = (128, 128, 3)
 LR = 0.0002
 
@@ -21,7 +23,6 @@ LAMBDA_IDENT = 0.3
 kernel_init_fn = keras.initializers.RandomNormal(mean=0.0, stddev=0.02)
 gamma_init_fn = keras.initializers.RandomNormal(mean=0.0, stddev=0.02)
 
-gan_loss_fn = losses.MeanSquaredError(reduction=losses.Reduction.NONE)
 geometry_loss_fn = losses.MeanAbsoluteError(reduction=losses.Reduction.NONE)
 identity_loss_fn = losses.MeanAbsoluteError(reduction=losses.Reduction.NONE)
 
@@ -199,12 +200,6 @@ def get_discriminator(image_shape, name):
 
     model = keras.models.Model(inputs=img_input, outputs=x, name=name)
     return model
-
-
-def get_discriminator_loss(real, fake):
-    real_loss = gan_loss_fn(tf.ones_like(real), real)
-    fake_loss = gan_loss_fn(tf.zeros_like(fake), fake)
-    return real_loss + fake_loss
 
 
 def get_geometry_loss(fake, fake_rot):
