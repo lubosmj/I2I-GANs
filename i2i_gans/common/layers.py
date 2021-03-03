@@ -1,17 +1,10 @@
-import tensorflow_addons as tfa
-
 from tensorflow import keras
 
 
-def conv2D(inputs, filters, strides=2, use_spectral_norm=False, use_batch_norm=True):
-    layer = keras.layers.Conv2D(
+def conv2D(inputs, filters, strides=2, use_batch_norm=True):
+    x = keras.layers.Conv2D(
         filters=filters, kernel_size=4, strides=strides, padding="same", use_bias=False
-    )
-
-    if use_spectral_norm:
-        x = tfa.layers.SpectralNormalization(layer)(inputs)
-    else:
-        x = layer(inputs)
+    )(inputs)
 
     if use_batch_norm:
         x = keras.layers.BatchNormalization()(x)
