@@ -60,9 +60,7 @@ def get_feature_matching_loss(real_features, fake_features):
         l2_norm_sqd = tf.math.squared_difference(
             tf.reduce_mean(real_feat, axis=0), tf.reduce_mean(fake_feat, axis=0)
         )
-
-        result += tf.reduce_mean(losses.hinge(l2_norm_sqd, tf.ones_like(l2_norm_sqd)))
-
+        result += tf.reduce_mean(l2_norm_sqd)
     return result
 
 
