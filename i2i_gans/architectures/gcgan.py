@@ -244,17 +244,17 @@ class LinearDecaySchedule(optimizers.schedules.LearningRateSchedule):
 
         steps_per_epoch = dataset_size // batch_size
 
-        self.initial_learning_rate = lr
+        self.initial_lr = lr
         self.steps_threshold = EPOCHS_DECAY_THRESHOLD * steps_per_epoch
         self.steps_to_decay = (epochs - EPOCHS_DECAY_THRESHOLD) * steps_per_epoch
-        self.step = self.initial_learning_rate / self.steps_to_decay
+        self.decay_value = self.initial_lr / self.steps_to_decay
 
     @tf.function
     def __call__(self, step):
         if step > self.steps_threshold:
-            return self.initial_learning_rate - self.step * (self.steps_threshold - step)
+            return self.initial_lr - self.decay_value * (step - self.steps_threshold)
         else:
-            return self.initial_learning_rate
+            return self.initial_lr
 
 
 class GcGAN(keras.Model):
