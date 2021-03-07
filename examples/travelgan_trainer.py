@@ -81,7 +81,7 @@ if args.second_domain_B_files:
     train_B = tf.data.experimental.sample_from_datasets([train_B, train_B2])
 else:
     train_B = datasets.build_input_pipeline(
-        args.domain_B_files, args.dataset_size, args.batch_size, args.augment
+        args.domain_B_files, args.dataset_size, args.batch_size, args.augment, cache=False
     )
 
 dataset = tf.data.Dataset.zip((train_A, train_B))
