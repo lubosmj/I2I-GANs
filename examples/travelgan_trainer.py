@@ -33,6 +33,32 @@ class TraVeLGANImageSampler(callbacks.ImageSampler):
             yield inputs[0], outputs[0]
 
 
+def preprocessing_model(input_shape=(218, 178, 3), image_size=(128, 128)):
+    inputs = keras.layers.Input(shape=input_shape)
+    x = keras.layers.ZeroPadding2D(padding=((0,25), (0,0)))(inputs)
+    x = keras.layers.experimental.preprocessing.CenterCrop(*image_size)(x)
+    x = keras.layers.experimental.preprocessing.Rescaling(1./127.5, offset=-1)(x)
+    return keras.Model(inputs=inputs, outputs=x)
+
+
+def build_cropped_celeba_input_pipeline(domain_files, dataset_size, batch_size, augment):
+    d = tf.data.Dataset.list_files(domain_files).take(dataset_size)
+    d = d.interleave(datasets.read_image, num_parallel_calls=tf.data.AUTOTUNE)
+    d = d.batch(batch_size, drop_remainder=True)
+    d = d.map(preprocessing_model(), num_parallel_calls=tf.data.AUTOTUNE)
+
+    if augment and "random_flip_left_right" in augment:
+        augment_images = tf.image.random_flip_left_right
+    else:
+        augment_images = lambda x: x
+
+    d = d.map(augment_images, num_parallel_calls=tf.data.AUTOTUNE)
+    d = d.cache()
+
+    d = d.prefetch(tf.data.AUTOTUNE)
+    return d
+
+
 parser = TraVeLGANParser()
 args = parser.parse_args()
 
@@ -42,7 +68,7 @@ model_checkpoint_callback = keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_filepath, save_freq=every_N_epochs
 )
 
-train_A = datasets.build_input_pipeline(
+train_A = build_cropped_celeba_input_pipeline(
     args.domain_A_files, args.dataset_size, args.batch_size, args.augment
 )
 if args.second_domain_B_files:
