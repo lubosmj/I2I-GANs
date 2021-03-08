@@ -17,7 +17,11 @@ class Parser:
         self.train.add_argument("--batch_size", type=int, default=16)
         self.train.add_argument("--dataset_size", type=int, default=10000)
 
-        self.train.add_argument("--augment", choices=["random_flip_left_right"], nargs="*")
+        self.train.add_argument(
+            "--augment",
+            choices=["random_flip_left_right", "random_brightness", "random_saturation"],
+            nargs="*",
+        )
 
         self.train.add_argument("--checkpoints_dir", default="checkpoints")
         self.train.add_argument(

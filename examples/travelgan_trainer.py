@@ -2,6 +2,7 @@ import os
 import tensorflow as tf
 
 from contextlib import ExitStack
+from functools import partial
 
 from tensorflow import keras
 
@@ -44,17 +45,15 @@ def preprocessing_model(input_shape=(218, 178, 3), image_size=(128, 128)):
 def build_cropped_celeba_input_pipeline(domain_files, dataset_size, batch_size, augment):
     d = tf.data.Dataset.list_files(domain_files).take(dataset_size)
     d = d.interleave(datasets.read_image, num_parallel_calls=tf.data.AUTOTUNE)
+
+    if augment:
+        d = d.map(
+            partial(datasets.augment_images, augmentations=augment),
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )
+
     d = d.batch(batch_size, drop_remainder=True)
     d = d.map(preprocessing_model(), num_parallel_calls=tf.data.AUTOTUNE)
-
-    if augment and "random_flip_left_right" in augment:
-        augment_images = tf.image.random_flip_left_right
-    else:
-        augment_images = lambda x: x
-
-    d = d.map(augment_images, num_parallel_calls=tf.data.AUTOTUNE)
-    d = d.cache()
-
     d = d.prefetch(tf.data.AUTOTUNE)
     return d
 
