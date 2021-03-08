@@ -204,7 +204,7 @@ def get_discriminator(image_shape, name):
 def get_discriminator_loss(real, fake):
     real_loss = gan_loss_fn(tf.ones_like(real), real)
     fake_loss = gan_loss_fn(tf.zeros_like(fake), fake)
-    return real_loss + fake_loss
+    return (real_loss + fake_loss) * 0.5
 
 
 def get_geometry_loss(fake, fake_rot):
