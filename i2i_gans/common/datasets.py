@@ -19,20 +19,20 @@ def augment_images(images, augmentations):
     if "random_brightness" in augmentations:
         images = tf.image.random_brightness(images, 0.15)
     if "random_saturation" in augmentations:
-        images = tf.image.random_saturation(images, 0.7, 1.3)
+        images = tf.image.random_saturation(images, 0.8, 1.8)
     return images
 
 
 def build_input_pipeline(domain_files, dataset_size, batch_size, augment=None, cache=True):
     d = tf.data.Dataset.list_files(domain_files).take(dataset_size)
     d = d.interleave(read_image, num_parallel_calls=tf.data.AUTOTUNE)
-    d = d.map(normalize_image, num_parallel_calls=tf.data.AUTOTUNE)
 
     if augment:
         d = d.map(
             partial(augment_images, augmentations=augment), num_parallel_calls=tf.data.AUTOTUNE
         )
 
+    d = d.map(normalize_image, num_parallel_calls=tf.data.AUTOTUNE)
     d = d.batch(batch_size, drop_remainder=True)
 
     if cache:
